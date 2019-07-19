@@ -23,161 +23,103 @@ auto getN(string s)
 		r.push_back(i);
 	return r;
 }
-map<char,char> dic(auto t)
+
+
+int lenTotal(auto s)
 {
-	map<char,char> m;
-	for(auto q:t)
-	for(auto s:q)
-	{
-		if(s!=' ')
-			m[s]='*';
-	}
-	return m;
-}
-map<char,char> copyDic(auto t,auto d)
-{
-	map<char,char> m;
-		for(auto s:t)
-		{
-			if(s!=' ')
-				m[s]=d[s];
-		}
-	return m;
-}
-string copyS(auto s)
-{
-	string x="";
+	int q =0;
 	for(auto c:s)
-		x+=c;
-	return x;
+		q+=c.size();
+	return q;
 }
 
 auto build(auto t)
 {
-	string x;
+	string q="";
 	for(auto s:t)
-		x+=s+" ";
-	return x;
-}
-
-auto bad(auto s)
-{
-	for(auto &c:s)
-		if(c!=' ')
-			c='*';
-	return s;
-}
-
-auto repl(auto *s,auto ss,char x, char y,auto *m)
-{
-	int r=0;
-	map<char,char> mm=copyDic(ss,*m);
-	string sss=copyS(*s);
-	
-	for(int i=0;i<ss.size();i++)
-		if(ss[i]==x){
-			if(mm[x]=='*'||mm[x]==y)
-				sss[i]=y,r++,mm[x]=y;
-			else if(mm[x]!='*'&&mm[x]!=y){
-				cout<<&sss<<" "<<s<<endl;
-				return -1;
-			}
-		}
-	*m=copyDic(ss,mm);
-	*s=copyS(sss);
-	return r;
-}
-auto rLen(auto *s,auto ss,auto w,auto t,auto *m)
-{
-	int r=0;
-	for(int i=0;i<w.size();i++)
 	{
-		int l=w[i].size(),q=0;
-		for(int j=0;j<w.size()&&!q;j++)
-			q=w[j].size()==l&&i!=j;
-		if(!q)
-		{
-			set<string> a;
-			string rrrr;
-			for(auto ssss:t)
-			{
-				if(ssss.size()==l)
-				{
-					a.insert(ssss);
-					rrrr=ssss;
-				}
-			}
-
-			if(a.size()!=1)
-				return -1;
-			int r=0;
-			for(int j=0;j<w[i].size();j++)
-			{
-				int tttt=repl(s,ss,rrrr[j],w[i][j],m);
-				if(tttt==-1)
-					return -1;
-				r+=tttt;
-			}
-
-			
-		}
-
+		q+=s+" ";
 	}
-	return r;
-	
+	return q.substr(0, q.size()-1);
 }
 
-auto rSame(auto *s,auto ss,auto w,auto t,auto *m)
+auto createDic()
 {
-	int r=0;
-	for(auto f:w)
-		for(auto g:t)
+	map<char,char> m;
+	for(char i='a';i<='z';i++)
+	{
+		m[i]='*';
+	}
+	return m;
+}
+
+auto changeDic(auto *dic, auto a, auto w)
+{
+	map<char,char> m=*dic;
+	for(int i=0;i<a.size();i++)
+	{
+		if(m[w[i]]=='*')
 		{
-			if(f.size()==g.size())
+			m[w[i]]=a[i];
+		}
+		else if(m[w[i]]!=a[i])
+		{
+			return 0;
+		}
+	}
+	*dic=m;
+	return 1;
+}
+
+int isFull(auto s, auto dic)
+{
+	int q=0;
+	for(char c:s)
+		if((dic[c])!='*')
+			q++;
+	return q==s.size();
+}
+
+auto getSol(auto s, auto dic)
+{
+	string r="";
+	for(auto c:s)
+		if(c!=' ')
+			r+=dic[c];
+		else
+			r+=' ';
+	return r;
+}
+
+int decipher(auto w, auto t,auto *dic)
+{
+	for(auto s:t)
+	{
+		if(!isFull(s,*dic))
+		{
+			for (int i = 0; i < w.size(); ++i)
 			{
-				set<char>a,b;
-				for(auto h:f)
-					a.insert(h);
-				for(auto h:g)
-					b.insert(h);
-				if(a.size()==b.size())
+				if(w[i].size()==s.size()&&changeDic(dic,w[i],s))
 				{
-					int x=0;
-					for(int h=0;h<f.size();h++)
-					{
-						int t=repl(s,ss,g[h],f[h],m);
-						if(t==-1)
-						{
-							x=0;
-							break;
-						}
-						x+=t;
-					}
-					r+=x;
+					vector<string> q = w;
+					q.erase(q.begin()+i);
+					if(decipher(q,t,dic))
+						return 1;
 				}
 			}
 		}
-	return r;
+	}
+	return 0;
 }
+
 auto superdescifrador(auto w, auto t)
 {
-	string a,b=build(t);
-	int r=0;
-	a=b;
-	auto map=dic(t);
-	//r+=repl(&a,b,'x','a');
-	int tt=rLen(&a,b,w,t,&map);
-	if(tt==-1)
-		return bad(a);
-	r+=tt;
-	tt=rSame(&a,b,w,t,&map);
-	if(tt==-1)
-		return bad(a);
-	r+=tt;
-	/*if(r!=a.size()-t.size())
-		return bad(a);*/
-	return a;
+	string a = build(t);
+	map<char,char> dic=createDic();
+	decipher(w,t,&dic);
+	return getSol(a,dic);
 }
+
 
 int main(int argc, char const *argv[])
 {
